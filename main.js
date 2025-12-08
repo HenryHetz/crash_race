@@ -901,6 +901,7 @@ class MainScene extends Phaser.Scene {
             c.value = 0;
             c.delta = Phaser.Math.Between(-10, 10);
             c.crash = 1 / Math.random();
+            // if (index === 0) c.crash = 10000 // dev
             c.exit = false;
             c.state = 0
             c.car.setFrame(c.state * 5 + index)
