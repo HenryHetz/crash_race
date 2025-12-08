@@ -71,8 +71,8 @@ class MainScene extends Phaser.Scene {
             TRACK_TOP: 100,
             TRACK_HEIGHT: 700,
             TRACK_BOTTOM: 800,
-            SPEED_UPDATE_SEC: 5, // 4
-            START_BASE: 0.04 // 0.02
+            SPEED_UPDATE_SEC: 5, // 4 / 5
+            START_BASE: 0.05 // 0.02 / 0.04
         };
 
         // colors
@@ -637,7 +637,8 @@ class MainScene extends Phaser.Scene {
 
     update(_time, deltaMs) {
         if (this.paused) return; // нужно и в паузу бежать дорогу?
-        const dt = Math.min(deltaMs, 32) / 1000; // кламп дельты
+        // const dt = Math.min(deltaMs, 32) / 1000; // кламп дельты
+        const dt = Math.min(deltaMs / 1000, 0.05);
         this.elapsedSec += dt;
         this.timeCounter.setText(this.elapsedSec.toFixed(2));
 
@@ -646,13 +647,10 @@ class MainScene extends Phaser.Scene {
         this.baseUpdate()
         this.carsDeltaUpdate()
 
-        // this.speed += 0.1
-        this.speed += this.base
-        // console.log('this.speed', this.speed)
-        // if (this.speed > this.config.MAX_CAR_SPEED) {
-        //     this.speed = this.config.MAX_CAR_SPEED
-        // }
-        // this.xCounter.setText(f0(this.speed));
+        const TARGET_FPS = 60; 
+        // this.speed += this.base
+        this.speed += this.base * TARGET_FPS * dt;
+        // console.log('this.speed', this.speed, 'dt', dt, this.speed + this.base * dt)
 
         for (const ms of this.milestones) {
             // двигаем вниз
@@ -672,9 +670,6 @@ class MainScene extends Phaser.Scene {
         if (steps > this.lastUpdateBase) {
             this.lastUpdateBase = steps;
             this.base *= 2;
-            // this.wallMult *= 2; // в 2 раза
-            // this.wallMult++; // +0.01
-            // console.log("this.wallMult x" + this.wallMult);
             this.baseCounter.setText(this.base);
         }
     }
