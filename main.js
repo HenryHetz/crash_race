@@ -688,8 +688,9 @@ class MainScene extends Phaser.Scene {
 
             this.cars.forEach((c, index) => {
                 if (c.dead) return;
-                c.delta = Phaser.Math.Between(-10, 10) * this.lastUpdateDelta / 2;
-                // console.log(index, 'car delta', c.delta, 'y', c.car.y)
+                // const delta = 400 * this.config.START_BASE
+                c.delta = this.setCarDelta() * this.lastUpdateDelta / 2;
+                console.log(index, 'car delta', c.delta, 'y', c.car.y)
                 if (c.delta > 5 && c.state === 0) {
                     const drift = Phaser.Math.Between(-5, 5)
                     // console.log(index, 'car delta', c.delta, 'drift', drift)
@@ -899,7 +900,7 @@ class MainScene extends Phaser.Scene {
             c.car.y = c.defaults.y;
             c.dead = false;
             c.value = 0;
-            c.delta = Phaser.Math.Between(-10, 10);
+            c.delta = this.setCarDelta();
             c.crash = 1 / Math.random();
             // if (index === 0) c.crash = 10000 // dev
             c.exit = false;
@@ -938,6 +939,10 @@ class MainScene extends Phaser.Scene {
         // // this.targetCrash = 1000 // dev
         // console.log('resetRound', random, 'this.targetCrash', this.targetCrash)
 
+    }
+    setCarDelta() {
+        const delta = 200 * this.config.START_BASE // 
+        return Phaser.Math.Between(- delta, delta);
     }
 }
 
