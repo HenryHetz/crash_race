@@ -71,8 +71,8 @@ class MainScene extends Phaser.Scene {
             TRACK_TOP: 100,
             TRACK_HEIGHT: 700,
             TRACK_BOTTOM: 800,
-            SPEED_UPDATE_SEC: 5,
-            START_BASE: 0.02
+            SPEED_UPDATE_SEC: 5, // 4
+            START_BASE: 0.04 // 0.02
         };
 
         // colors
@@ -353,7 +353,7 @@ class MainScene extends Phaser.Scene {
 
         // X counter
         this.xCounter = this.add
-            .text(320, 140, '100', {
+            .text(320, 140, '', {
                 font: "44px Helvetica",
                 // fontFamily: 'CyberFont',
                 // fontSize: '40px',
@@ -783,7 +783,7 @@ class MainScene extends Phaser.Scene {
         if (best > this.bestX) this.bestX = best
         // this.xCounter.setText('LIDER '+f0(this.bestX * 100));
         liderIndex ++
-        this.xCounter.setText('LIDER '+ liderIndex);
+        this.xCounter.setText(liderIndex +' LIDER '+ (this.bestX*100).toFixed(1));
 
         if (this.crashCount == this.cars.length) {
             this.finishRound();
