@@ -803,25 +803,13 @@ class MainScene extends Phaser.Scene {
                 // c.counter.setText((c.value * 100).toFixed(0));
                 // this.carCrash(c, index)
             }
-            // if (c.exit && c.car.alpha > 0.2) c.car.alpha = 0.2
-            if (c.value > 5 && c.state < 1 && !c.exit) {
-                // console.log('flight play')
-                c.state = 1
-                c.car.setFrame(c.state * 5 + index) 
-                this.sfx.flight.play()
-            }
-            if (c.value > 20 && c.state < 2 && !c.exit) {
-                // console.log('rocket play')
-                c.state = 2
-                c.car.setFrame(c.state * 5 + index) 
-                this.sfx.flight.stop()
-                this.sfx.rocket.play()
-            }
-
+            
             if (x > best && !c.exit && !c.dead) {
                 best = x
                 liderIndex = index
             }
+
+            this.carFrameUpdate(c, index)
         })
         if (best > this.bestX) this.bestX = best
         if (this.bestX > 2 && this.bestX < 2.01) console.log('best 2 time ', this.elapsedSec.toFixed(2));    
@@ -835,6 +823,37 @@ class MainScene extends Phaser.Scene {
         if (this.crashCount == this.cars.length) {
             this.finishRound();
         }
+    }
+    carFrameUpdate(c, index) {
+        let update = false
+        if (c.value > 5 && c.state < 1 && !c.exit) {
+                // console.log('flight play')
+                c.state = 1
+                c.car.setFrame(c.state * 5 + index) 
+                this.sfx.flight.play()
+                update = true
+        }
+        if (c.value > 20 && c.state < 2 && !c.exit) {
+            // console.log('rocket play')
+            c.state = 2
+            c.car.setFrame(c.state * 5 + index) 
+            this.sfx.flight.stop()
+            this.sfx.rocket.play()
+            update = true
+        }
+        if (update) {
+            this.tweens.add({
+                targets: c.car,
+                scaleX: c.defaults.scale * 1.2,
+                duration: 100,
+                yoyo: true,
+                ease: "Quad.easeOut",
+                onComplete: () => {
+                    c.car.scaleX = c.defaults.scale
+                }
+            });
+        }
+            
     }
     finishRound(target) {
         this.paused = true;
@@ -960,6 +979,7 @@ class MainScene extends Phaser.Scene {
 
             c.crash = 1 / Math.random();
             // if (index === 0) c.crash = 100 // dev
+            // c.crash = 100 // dev
 
             c.exit = false;
             c.state = 0
