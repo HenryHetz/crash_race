@@ -45,6 +45,8 @@ class MainScene extends Phaser.Scene {
 
         this.load.audio('race', 'assets/sfx/race.mp3')
         this.load.audio('flight', 'assets/sfx/flight.mp3')
+        this.load.audio('rocket', 'assets/sfx/rocket_2.mp3')
+        this.load.audio('portal', 'assets/sfx/rocket_1.mp3')
     }
     init() {
         this.rtp = [];
@@ -63,7 +65,7 @@ class MainScene extends Phaser.Scene {
 
         this.config = {
             CAR_AMOUNT: 5,
-            CAR_X_START: 120,
+            CAR_X_START: 100,
             CAR_Y_START: 650,
             START_CAR_SPEED: 100,
             MAX_CAR_SPEED: 1000,
@@ -72,7 +74,7 @@ class MainScene extends Phaser.Scene {
             TRACK_HEIGHT: 700,
             TRACK_BOTTOM: 800,
             SPEED_UPDATE_SEC: 5, // 4 / 5
-            START_BASE: 0.05 // 0.02 / 0.04
+            START_BASE: 0.04 // 0.02 / 0.04
         };
 
         // colors
@@ -250,11 +252,107 @@ class MainScene extends Phaser.Scene {
         console.log("P(X>10) ≈", survivalProb(winsArray, 10)); // должно быть ~0.1
         console.log("P(X>100) ≈", survivalProb(winsArray, 100)); // ~0.01
     }
+
+    // 
+    create() {
+        setTimeout(() => { }, 2000);
+
+        // this.bg = this.add
+        //     .image(0, 0, "bg")
+        //     .setScale(1)
+        //     .setOrigin(0, 0)
+        //     .setAlpha(1)
+        //     .setDepth(10)
+
+        this.track = this.add.graphics()
+            .fillStyle(0xffffff, 0.2) // 0x212838
+            .fillRoundedRect(20, 100, 600, 700, 20);
+        this.trackLine = this.add.graphics()
+            .lineStyle(6, 0xffffff, 0.9)
+            .strokeRoundedRect(30, 110, 580, 680, 10);
+
+        this.createTiles()
+        this.createCars()
+
+        const w = 400;
+        const h = 200;
+
+        // const button = this.add.graphics()
+        // .fillStyle(this.standartColors.red, 0.8) 
+        // .fillRoundedRect(200, 900, 200, 100, 10);
+
+        this.button = this.add
+            .image(320, 1000, "button")
+            .setOrigin(0.5)
+            .setAlpha(0)
+            .setDepth(20)
+            .setInteractive()
+            .on("pointerdown", () => {
+                return // dev
+                console.log("button touch");
+                if (!this.paused && !this.exitTime) {
+                    this.exitTime = new Date().getTime();
+                    this.exitX = this.bestX
+
+                    this.win = this.bestX * this.bet;
+                    this.deposit += this.win;
+                    this.depoCounter.setText(this.deposit.toFixed(2));
+                    // this.stakeCounter.setColor(this.textColors.red)
+                    this.buttonUpdate(0)
+                    this.sfx.cashout.play()
+                }
+            });
+
+
+        this.createCounters()
+        this.createParticles();
+
+        this.sfx = {
+            // plink: this.sound.add("plink", { volume: 0.1 }),
+            cashout: this.sound.add("cashout", { volume: 0.2 }),
+            revving: this.sound.add("revving", { volume: 0.2 }),
+            nitro: this.sound.add("nitro", { volume: 0.2 }),
+            race: this.sound.add("race", { 
+                volume: 0.1, 
+                // pitch: 1000,
+                detune: 500, }),
+            flight: this.sound.add("flight", { volume: 0.2 }),
+            rocket: this.sound.add("rocket", { volume: 0.2 }),
+            car_crash_1: this.sound.add("car_crash_1", { volume: 0.1, detune: 1000 }),
+            car_crash_2: this.sound.add("car_crash_2", { volume: 0.1, detune: 1000, }),
+            car_crash_3: this.sound.add("car_crash_3", { volume: 0.1, detune: 1000, }),
+            car_crash_4: this.sound.add("car_crash_4", { volume: 0.1, detune: 1000, }),
+        };
+
+        // this.sfx.rocket.play() // dev
+
+        setTimeout(() => {
+            // this.sfx.ambient.play();
+            // this.createCounters()
+            this.resetRound();
+        }, 1000);
+    }
+
     createCounters() {
         const smallFont = "20px Helvetica" // 22
         const y_1 = 32
         const y_2 = 110
         const gapY = 26
+
+        this.fpsText = this.add.text(50, 120, 'FPS: ', {
+            font: smallFont,
+            fill: this.textColors.white
+        }).setDepth(100);
+
+        this.dtText = this.add.text(50, 150, 'Dt: ', {
+            font: smallFont,
+            fill: this.textColors.white
+        }).setDepth(100);
+
+        this.speedText = this.add.text(50, 180, 'SPEED: ', {
+            font: smallFont,
+            fill: this.textColors.white
+        }).setDepth(100);
 
         // MODE
         this.add
@@ -379,7 +477,7 @@ class MainScene extends Phaser.Scene {
     createIcons() {
 
     }
-    createMilestones() {
+    createTiles() {
         this.milestones = [];
 
         const x = 20;
@@ -407,7 +505,7 @@ class MainScene extends Phaser.Scene {
         // this.carCounters = []
         // const x = 120
         const y = this.config.CAR_Y_START
-        const delta = 100
+        const delta = 110
         const radius = 30
 
         const graphics = this.add.graphics();
@@ -433,6 +531,16 @@ class MainScene extends Phaser.Scene {
                     this.buttonHandler(index)
                 })
             this.buttons.push(button)
+
+            const number = this.add.text(x, 850, (index + 1),{
+                font: "40px Helvetica",
+                // fontFamily: 'CyberFont',
+                // fontSize: '40px',
+                fill: this.textColors.black,
+            }).setAlpha(1)
+            .setOrigin(0.5)
+            .setAlign('center')
+            // .setDepth(20)
 
             const car = this.add
             .image(x, y, 'crash_cars', index)
@@ -538,78 +646,6 @@ class MainScene extends Phaser.Scene {
         const sound = this.sfx['car_crash_' + Phaser.Math.Between(1,4)]
         sound.play()
     }
-    create() {
-        setTimeout(() => { }, 2000);
-
-        // this.bg = this.add
-        //     .image(0, 0, "bg")
-        //     .setScale(1)
-        //     .setOrigin(0, 0)
-        //     .setAlpha(1)
-        //     .setDepth(10)
-
-        this.track = this.add.graphics()
-            .fillStyle(0xffffff, 0.2) // 0x212838
-            .fillRoundedRect(20, 100, 600, 700, 10);
-
-        this.createMilestones()
-        this.createCars()
-
-        const w = 400;
-        const h = 200;
-
-        // const button = this.add.graphics()
-        // .fillStyle(this.standartColors.red, 0.8) 
-        // .fillRoundedRect(200, 900, 200, 100, 10);
-
-        this.button = this.add
-            .image(320, 1000, "button")
-            .setOrigin(0.5)
-            .setAlpha(0)
-            .setDepth(20)
-            .setInteractive()
-            .on("pointerdown", () => {
-                return // dev
-                console.log("button touch");
-                if (!this.paused && !this.exitTime) {
-                    this.exitTime = new Date().getTime();
-                    this.exitX = this.bestX
-
-                    this.win = this.bestX * this.bet;
-                    this.deposit += this.win;
-                    this.depoCounter.setText(this.deposit.toFixed(2));
-                    // this.stakeCounter.setColor(this.textColors.red)
-                    this.buttonUpdate(0)
-                    this.sfx.cashout.play()
-                }
-            });
-
-
-        this.createCounters()
-        this.sfx = {
-            // plink: this.sound.add("plink", { volume: 0.1 }),
-            cashout: this.sound.add("cashout", { volume: 0.2 }),
-            revving: this.sound.add("revving", { volume: 0.2 }),
-            nitro: this.sound.add("nitro", { volume: 0.2 }),
-            race: this.sound.add("race", { 
-                volume: 0.1, 
-                // pitch: 1000,
-                detune: 500, }),
-            flight: this.sound.add("flight", { volume: 0.2 }),
-            car_crash_1: this.sound.add("car_crash_1", { volume: 0.3 }),
-            car_crash_2: this.sound.add("car_crash_2", { volume: 0.3 }),
-            car_crash_3: this.sound.add("car_crash_3", { volume: 0.3 }),
-            car_crash_4: this.sound.add("car_crash_4", { volume: 0.3 }),
-        };
-
-        this.createParticles();
-
-        setTimeout(() => {
-            // this.sfx.ambient.play();
-            // this.createCounters()
-            this.resetRound();
-        }, 1000);
-    }
     buttonUpdate(state) {
         this.button.alpha = state
         if (state) {
@@ -641,16 +677,21 @@ class MainScene extends Phaser.Scene {
         const dt = Math.min(deltaMs / 1000, 0.05);
         this.elapsedSec += dt;
         this.timeCounter.setText(this.elapsedSec.toFixed(2));
-
+        this.fpsText.setText(`FPS: ${this.game.loop.actualFps.toFixed(0)}`);
+        this.dtText.setText(`Dt: ${dt.toFixed(4)}`);
         const timeNow = new Date().getTime();
 
         this.baseUpdate()
-        this.carsDeltaUpdate()
+        this.carsDeltaUpdate(dt)
 
         const TARGET_FPS = 60; 
         // this.speed += this.base
-        this.speed += this.base * TARGET_FPS * dt;
-        // console.log('this.speed', this.speed, 'dt', dt, this.speed + this.base * dt)
+        const lastSpeed = this.speed || 0;
+        // this.speed += this.base * TARGET_FPS * dt;
+        // this.speed = this.speed + this.speed * (this.base / 100)
+        this.speed *= Math.exp(this.base * dt);
+        this.speedText.setText(`S: ${this.speed.toFixed(2)}`);
+        // console.log('this.speed', this.speed, '%', (this.speed - lastSpeed)/this.speed*100 ) // 'dt', dt, this.speed + this.base * dt
 
         for (const ms of this.milestones) {
             // двигаем вниз
@@ -662,7 +703,7 @@ class MainScene extends Phaser.Scene {
             }
         }
 
-        this.checkCars();
+        this.checkCars(dt);
     }
     baseUpdate() {
         const N = this.config.SPEED_UPDATE_SEC;
@@ -690,7 +731,7 @@ class MainScene extends Phaser.Scene {
                 if (c.dead) return;
                 // const delta = 400 * this.config.START_BASE
                 c.delta = this.setCarDelta(); // * this.lastUpdateDelta / 2
-                console.log(index, 'car delta', c.delta, 'y', c.car.y)
+                console.log(index, 'car delta', c.delta, this.lastUpdateDelta)
                 if (c.delta > 5 && c.state === 0) {
                     const drift = Phaser.Math.Between(-5, 5)
                     // console.log(index, 'car delta', c.delta, 'drift', drift)
@@ -727,6 +768,7 @@ class MainScene extends Phaser.Scene {
     checkCars() {
         let best = 0
         let liderIndex = -1
+        let total = 0
        
         this.cars.forEach((c, index) => {
             const x = (this.speed - (c.car.y - 700) / 10) / 100 // дикая конструкция, но работает
@@ -754,6 +796,7 @@ class MainScene extends Phaser.Scene {
                 c.counter.setText((c.value * 100).toFixed(0));
                 c.counter.y = c.car.y // 700 + c.car.y
                 // console.log('speed +', c.car.y)
+                total += c.value
             }
             if (c.exit && !c.dead) {
                 // c.value = c.crash
@@ -761,14 +804,18 @@ class MainScene extends Phaser.Scene {
                 // this.carCrash(c, index)
             }
             // if (c.exit && c.car.alpha > 0.2) c.car.alpha = 0.2
-            if (c.value > 5 && c.state != 1 && !c.exit) {
+            if (c.value > 5 && c.state < 1 && !c.exit) {
+                // console.log('flight play')
                 c.state = 1
                 c.car.setFrame(c.state * 5 + index) 
                 this.sfx.flight.play()
             }
-            if (c.value > 20 && c.state != 2 && !c.exit) {
+            if (c.value > 20 && c.state < 2 && !c.exit) {
+                // console.log('rocket play')
                 c.state = 2
                 c.car.setFrame(c.state * 5 + index) 
+                this.sfx.flight.stop()
+                this.sfx.rocket.play()
             }
 
             if (x > best && !c.exit && !c.dead) {
@@ -777,10 +824,13 @@ class MainScene extends Phaser.Scene {
             }
         })
         if (best > this.bestX) this.bestX = best
+        if (this.bestX > 2 && this.bestX < 2.02) console.log('best 2 time ', this.elapsedSec.toFixed(2));    
+        if (this.bestX > 5 && this.bestX < 5.02) console.log('best 5 time ', this.elapsedSec.toFixed(2));    
         // this.xCounter.setText('LIDER '+f0(this.bestX * 100));
         liderIndex ++
         this.xCounter.setText(liderIndex +' LIDER '+ (this.bestX*100).toFixed(1));
 
+        this.stakeCounter.setText((total * 100).toFixed(0))
         if (this.crashCount == this.cars.length) {
             this.finishRound();
         }
@@ -804,6 +854,7 @@ class MainScene extends Phaser.Scene {
 
         this.sfx.race.stop()
         this.sfx.flight.stop()
+        this.sfx.rocket.stop()
     }
     showStat() {
         // const rtp = this.win / this.targetCrash;
@@ -888,6 +939,7 @@ class MainScene extends Phaser.Scene {
         this.deposit -= this.bet * 5;
         this.depoCounter.setText(this.deposit.toFixed(2));
         this.stakeCounter.setColor(this.textColors.white)
+        this.stakeCounter.setText((this.bet * 5).toFixed(0))
         this.baseCounter.setText(this.base.toFixed(2));
 
         // this.buttonUpdate(1)
@@ -906,7 +958,8 @@ class MainScene extends Phaser.Scene {
             c.delta = this.setCarDelta()
 
             c.crash = 1 / Math.random();
-            // if (index === 0) c.crash = 10000 // dev
+            // if (index === 0) c.crash = 100 // dev
+
             c.exit = false;
             c.state = 0
             c.car.setFrame(c.state * 5 + index)
@@ -945,7 +998,7 @@ class MainScene extends Phaser.Scene {
 
     }
     setCarDelta() {
-        const delta = 200 * this.config.START_BASE // 
+        const delta = 10 // 
         return Phaser.Math.Between(- delta, delta);
     }
 }
@@ -981,10 +1034,11 @@ new Phaser.Game({
         mode: Phaser.Scale.FIT,
         // autoCenter: Phaser.Scale.NO_CENTER,
     },
-    // scale: {
-    //     mode: Phaser.Scale.FIT,
-    //     autoCenter: Phaser.Scale.CENTER_BOTH,
-    // },
+    fps: {
+        target: 120,
+        forceSetTimeOut: true,
+        smoothStep: false,
+    },
     backgroundColor: "#060B14",
     parent: "game",
     scene: [MainScene],
