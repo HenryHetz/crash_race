@@ -262,7 +262,7 @@ class MainScene extends Phaser.Scene {
             .image(320, 0, "bg")
             .setScale(0.7)
             .setOrigin(0.5, 0)
-            .setAlpha(0.2)
+            .setAlpha(0.99)
             // .setDepth(10)
 
         this.track = this.add.graphics()
@@ -283,7 +283,7 @@ class MainScene extends Phaser.Scene {
         // .fillRoundedRect(200, 900, 200, 100, 10);
 
         this.button = this.add
-            .image(320, 1000, "button")
+            .image(320, 1100, "button")
             .setOrigin(0.5)
             .setAlpha(0)
             .setDepth(20)
@@ -525,7 +525,7 @@ class MainScene extends Phaser.Scene {
             const x = this.config.CAR_X_START + index * delta 
             const button = this.add.image(x, 850, "button") 
                 .setOrigin(0.5)
-                .setScale(0.3, 0.6)
+                .setScale(0.3, 0.7)
                 .setInteractive()
                 .on("pointerdown", () => {
                     console.log("button car crash", index);
@@ -546,7 +546,7 @@ class MainScene extends Phaser.Scene {
             const car = this.add
             .image(x, y, 'crash_cars', index)
             .setOrigin(0.5, 0)
-            .setScale(0.5)
+            .setScale(0.6)
 
             const counter = this.add.text(x, car.y, 'X', {
                 font: "20px Helvetica",
@@ -562,7 +562,7 @@ class MainScene extends Phaser.Scene {
                 defaults: {
                     x: x,
                     y: y,
-                    scale: 0.5
+                    scale: car.scale
                 }
             });
 
@@ -896,7 +896,7 @@ class MainScene extends Phaser.Scene {
 
         setTimeout(() => {
             this.resetRound(target);
-        }, 3000);
+        }, 1000);
 
         this.sfx.race.stop()
         this.sfx.flight.stop()
