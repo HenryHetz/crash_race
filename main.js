@@ -13,6 +13,7 @@ class MainScene extends Phaser.Scene {
     }
     preload() {
         // sprites
+        this.load.image("bg", "assets/sprites/bg.jpg");
         this.load.image("button", "assets/sprites/button_red.png");
 
         // атласы
@@ -257,18 +258,18 @@ class MainScene extends Phaser.Scene {
     create() {
         setTimeout(() => { }, 2000);
 
-        // this.bg = this.add
-        //     .image(0, 0, "bg")
-        //     .setScale(1)
-        //     .setOrigin(0, 0)
-        //     .setAlpha(1)
-        //     .setDepth(10)
+        this.bg = this.add
+            .image(320, 0, "bg")
+            .setScale(0.7)
+            .setOrigin(0.5, 0)
+            .setAlpha(0.2)
+            // .setDepth(10)
 
         this.track = this.add.graphics()
-            .fillStyle(0xffffff, 0.2) // 0x212838
+            .fillStyle(0xffffff, 0) // 0x212838
             .fillRoundedRect(20, 100, 600, 700, 20);
         this.trackLine = this.add.graphics()
-            .lineStyle(6, 0xffffff, 0.9)
+            .lineStyle(6, 0xffffff, 0)
             .strokeRoundedRect(30, 110, 580, 680, 10);
 
         this.createTiles()
@@ -549,7 +550,7 @@ class MainScene extends Phaser.Scene {
 
             const counter = this.add.text(x, car.y, 'X', {
                 font: "20px Helvetica",
-                fill: this.textColors.black,
+                fill: this.textColors.gray,
             }).setAlpha(1)
                 .setOrigin(0.5)
             // .setDepth(20)
@@ -732,7 +733,7 @@ class MainScene extends Phaser.Scene {
                 // const delta = 400 * this.config.START_BASE
                 c.delta = this.setCarDelta(); // * this.lastUpdateDelta / 2
                 console.log(index, 'car delta', c.delta, this.lastUpdateDelta)
-                if (c.delta > 5 && c.state === 0) {
+                if (c.delta < 0 && c.state === 0) {
                     const drift = Phaser.Math.Between(-5, 5)
                     // console.log(index, 'car delta', c.delta, 'drift', drift)
                     // this.sfx.revving.play()
@@ -754,6 +755,31 @@ class MainScene extends Phaser.Scene {
                                     c.car.x = c.defaults.x
                                 },
                             });
+                        },
+                    });
+                }
+                if (c.delta > 0) {
+                    return
+                    const y = c.car.y
+                    this.tweens.add({
+                        targets: c.car,
+                        // y: y + drift,
+                        scaleY: c.defaults.scale * 1.1,
+                        duration: 100,
+                        yoyo: true,
+                        ease: "Back.easeIn", // 'Quad.easeOut'
+                        onComplete: () => {
+                            c.car.scaleY = c.defaults.scale
+                            // this.tweens.add({
+                            //     targets: c.car,
+                            //     // y: c.car.y,
+                            //     // angle: 0,
+                            //     duration: 200,
+                            //     ease: "Back.easeOut", // 'Quad.easeOut'
+                            //     onComplete: () => {
+                            //         // c.car.y = c.defaults.y
+                            //     },
+                            // });
                         },
                     });
                 }
