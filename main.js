@@ -74,7 +74,7 @@ class MainScene extends Phaser.Scene {
             TRACK_HEIGHT: 700,
             TRACK_BOTTOM: 800,
             SPEED_UPDATE_SEC: 5, // 4 / 5
-            START_BASE: 0.04 // 0.02 / 0.04
+            START_BASE: 0.05 // 0.02 / 0.04 - 0.05 хорошее среднее
         };
 
         // colors
@@ -710,8 +710,8 @@ class MainScene extends Phaser.Scene {
         const steps = Math.floor(this.elapsedSec / N);
         if (steps > this.lastUpdateBase) {
             this.lastUpdateBase = steps;
-            this.base *= 2;
-            this.baseCounter.setText(this.base);
+            this.base *= 1.5;
+            this.baseCounter.setText(this.base.toFixed(3));
         }
     }
     carsDeltaUpdate() {
@@ -824,11 +824,12 @@ class MainScene extends Phaser.Scene {
             }
         })
         if (best > this.bestX) this.bestX = best
-        if (this.bestX > 2 && this.bestX < 2.02) console.log('best 2 time ', this.elapsedSec.toFixed(2));    
-        if (this.bestX > 5 && this.bestX < 5.02) console.log('best 5 time ', this.elapsedSec.toFixed(2));    
+        if (this.bestX > 2 && this.bestX < 2.01) console.log('best 2 time ', this.elapsedSec.toFixed(2));    
+        if (this.bestX > 5 && this.bestX < 5.01) console.log('best 5 time ', this.elapsedSec.toFixed(2));    
+        if (this.bestX > 10 && this.bestX < 10.01) console.log('best 10 time ', this.elapsedSec.toFixed(2));
         // this.xCounter.setText('LIDER '+f0(this.bestX * 100));
         liderIndex ++
-        this.xCounter.setText(liderIndex +' LIDER '+ (this.bestX*100).toFixed(1));
+        this.xCounter.setText('Leader: '+ liderIndex) // (this.bestX*100).toFixed(1));
 
         this.stakeCounter.setText((total * 100).toFixed(0))
         if (this.crashCount == this.cars.length) {
